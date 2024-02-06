@@ -1,7 +1,27 @@
 import PySimpleGUI as sg
 import serial
+import threading
+import queue
 
-sg.theme('DarkBlue1') 
+
+def serial_thread(com_port, window, values_queue):
+    try:
+        s = serial.Serial(com_port, 9600, timeout=1)
+        while True:
+            # Read from the serial port
+            res = s.readline().decode().strip()
+            
+            # Update the GUI in a thread-safe way
+            window.write_event_value('-UPDATE_SERIAL-', res)
+            
+            # Check if there are values to send
+            if not values_queue.empty():
+                values_to_send = values_queue.get()
+                # Convert values to bytes and send them over serial
+                s.write(values_to_send.encode())
+    except Exception as e:
+        print(f'Error in serial thread: {e}')
+sg.theme('DarkBlue1')
 
 # Define sub-layouts
 header_layout = [
@@ -10,9 +30,9 @@ header_layout = [
 
 leg_layout = [
     [sg.Text('', size=(6, 1)), sg.Text('Aleg', size=(6, 1)), sg.Text('Bleg', size=(6, 1)), sg.Text('Cleg', size=(6, 1)), sg.Text('Dleg', size=(6, 1))],
-    [sg.Text('xH', size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1))],
-    [sg.Text('xLR', size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1))],
-    [sg.Text('xFB', size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1)), sg.InputText(size=(6, 1))],
+    [sg.Text('xH', size=(6, 1)), sg.InputText(size=(6, 1), key="xHa"), sg.InputText(size=(6, 1), key="xHb"), sg.InputText(size=(6, 1), key="xHc"), sg.InputText(size=(6, 1), key="xHd")],
+    [sg.Text('xLR', size=(6, 1)), sg.InputText(size=(6, 1), key="xLRa"), sg.InputText(size=(6, 1), key="xLRb"), sg.InputText(size=(6, 1), key="xLRc"), sg.InputText(size=(6, 1), key="xLRd")],
+    [sg.Text('xFB', size=(6, 1)), sg.InputText(size=(6, 1), key="xFBa"), sg.InputText(size=(6, 1), key="xFBb"), sg.InputText(size=(6, 1), key="xFBc"), sg.InputText(size=(6, 1), key="xFBd")],
     [sg.Button('Send Values')],
 ]
 
@@ -39,18 +59,36 @@ layout = [
 # Create the Window
 window = sg.Window('Robot Control', layout)
 
+values_queue = queue.Queue()
+
 # Event Loop to process "events" and get the "values" of the inputs
 while True:
     event, values = window.read()
+
     if event == sg.WIN_CLOSED or event == 'Cancel':
         break
     elif event == 'Connect':
         com_port = values['-COM_PORT-']
-        telnet_port = values['-TELNET_PORT-']
-        # Add code to handle connection with the specified COM and/or TELNET port
-        print(f'Connecting to COM Port: {com_port}, TELNET Port: {telnet_port}')
-        s = serial.Serial(com_port)
-        res = s.read()
-        print(res)
+        # Start the serial communication thread with the dynamically entered COM port
+        serial_thread_instance = threading.Thread(target=serial_thread, args=(com_port, window, values_queue), daemon=True)
+        serial_thread_instance.start()
+    
+    elif event == 'Send Values':
+        try:
+            # Get values from the input fields and convert them to floats
+            xH_values = [float(values[f'xH{i}']) for i in ['a', 'b', 'c', 'd']]
+            xLR_values = [float(values[f'xLR{i}']) for i in ['a', 'b', 'c', 'd']]
+            xFB_values = [float(values[f'xFB{i}']) for i in ['a', 'b', 'c', 'd']]
+
+            # Construct the values_to_send string
+            values_to_send = ','.join(map(str, xH_values))
+            values_to_send += ',' + ','.join(map(str, xLR_values))
+            values_to_send += ',' + ','.join(map(str, xFB_values))
+
+            # Put the values_to_send in the queue
+            values_queue.put(values_to_send)
+        except ValueError:
+            # Handle the case where conversion to float fails (e.g., non-numeric input)
+            print("Error: Input must be numeric")
 
 window.close()
