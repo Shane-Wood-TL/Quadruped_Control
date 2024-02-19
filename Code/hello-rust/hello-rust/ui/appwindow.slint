@@ -1,0 +1,157 @@
+import { Button, VerticalBox, HorizontalBox } from "std-widgets.slint";
+
+export component AppWindow inherits Window {
+    callback send-values();
+    callback connect-to-port();
+
+    in-out property<string> portName;
+
+    in-out property<string> xALegxH;
+    in-out property<string> xBLegxH;
+    in-out property<string> xCLegxH;
+    in-out property<string> xDLegxH;
+    in-out property<string> xALegxFB;
+    in-out property<string> xBLegxFB;
+    in-out property<string> xCLegxFB;
+    in-out property<string> xDLegxFB;
+    in-out property<string> xALegxLR;
+    in-out property<string> xBLegxLR;
+    in-out property<string> xCLegxLR;
+    in-out property<string> xDLegxLR;
+
+    VerticalBox {
+        Text {
+            text: "Robot Controller";
+        }
+        HorizontalBox {
+            Text{
+                text: "Com Port:";
+            }
+            TextInput {
+                text: "\{root.portName}";
+                edited => {
+                    portName = self.text;
+            }
+        }
+        }
+        Button {
+            text: "Connect";
+            clicked => {
+                root.connect-to-port();
+            }
+        }
+        GridLayout {
+            spacing: 5px;
+            Row {
+                Text {
+                    text: "";
+                }
+                Text {
+                    text: "aLeg";
+                }
+                Text {
+                    text: "bLeg";
+                }
+                Text {
+                    text: "cLeg";
+                }
+                Text {
+                    text: "dLeg";
+                }
+            }
+            Row{
+                Text {
+                    text: "xH";
+                }
+                TextInput {
+                    text: "\{root.xALegxH}";
+                    edited => {
+                        xALegxH = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xBLegxH}";
+                    edited => {
+                        xBLegxH = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xCLegxH}";
+                    edited => {
+                        xCLegxH = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xDLegxH}";
+                    edited => {
+                        xDLegxH = self.text;
+                    }
+                }
+            }
+            Row{
+                Text {
+                    text: "xFB";
+                }
+                TextInput {
+                    text: "\{root.xALegxFB}";
+                    edited => {
+                        xALegxFB = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xBLegxFB}";
+                    edited => {
+                        xBLegxFB = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xCLegxFB}";
+                    edited => {
+                        xCLegxFB = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xDLegxFB}";
+                    edited => {
+                        xDLegxFB = self.text;
+                    }
+                }
+            }
+            Row{
+                Text {
+                    text: "xLR";
+                }
+                TextInput {
+                    text: "\{root.xALegxLR}";
+                    edited => {
+                        xALegxLR = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xBLegxLR}";
+                    edited => {
+                        xBLegxLR = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xCLegxLR}";
+                    edited => {
+                        xCLegxLR = self.text;
+                    }
+                }
+                TextInput {
+                    text: "\{root.xDLegxLR}";
+                    edited => {
+                        xDLegxLR = self.text;
+                    }
+                }
+            }
+        }
+        Button {
+            text: "Send Values";
+            clicked => {
+                root.send-values();
+            }
+        }
+    }
+}
