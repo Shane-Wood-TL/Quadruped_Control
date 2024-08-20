@@ -1,2 +1,1 @@
-# Quadruped_Control
- This is a program to control my quadruped robot over serial using some method
+All features planned for this were combined into [Shane-Wood-TL/Quadruped_Control](https://github.com/Shane-Wood-TL/SW-Quadruped) past commit 95 (f9fe5b2) therefore this repository is marked as an archive for how I had planned to implement communication over serial with some partially functional rust and python code. 
